@@ -83,6 +83,13 @@ public class TypeParameterResolver {
     return result;
   }
 
+  /**
+   *
+   * @param type    方法的返回类型 method.getGenericReturnType()
+   * @param srcType 方法所在类的类型
+   * @param declaringClass  方法所在类活接口的类型 method.getDeclaringClass()
+   * @return  返回类型
+   */
   private static Type resolveType(Type type, Type srcType, Class<?> declaringClass) {
     if (type instanceof TypeVariable) {
       return resolveTypeVar((TypeVariable<?>) type, srcType, declaringClass);

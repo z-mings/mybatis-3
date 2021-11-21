@@ -91,6 +91,9 @@ public class Reflector {
     resolveGetterConflicts(conflictingGetters);
   }
 
+  /**
+   * 解决重写和重载父类的get方法时造成的冲突
+   */
   private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {
     for (Entry<String, List<Method>> entry : conflictingGetters.entrySet()) {
       Method winner = null;
@@ -103,16 +106,16 @@ public class Reflector {
         }
         Class<?> winnerType = winner.getReturnType();
         Class<?> candidateType = candidate.getReturnType();
-        if (candidateType.equals(winnerType)) {
-          if (!boolean.class.equals(candidateType)) {
+        if (candidateType.equals(winnerType)) {   //父类方法返回类型和子类相同
+          if (!boolean.class.equals(candidateType)) { //如果返回类型不为boolean，则表明类型不明确
             isAmbiguous = true;
             break;
-          } else if (candidate.getName().startsWith("is")) {
+          } else if (candidate.getName().startsWith("is")) {  //如果为boolean类型，且方法名是is开头
             winner = candidate;
           }
-        } else if (candidateType.isAssignableFrom(winnerType)) {
+        } else if (candidateType.isAssignableFrom(winnerType)) {  //选用父类类型为返回类型
           // OK getter type is descendant
-        } else if (winnerType.isAssignableFrom(candidateType)) {
+        } else if (winnerType.isAssignableFrom(candidateType)) {  //选用父类类型为返回类型
           winner = candidate;
         } else {
           isAmbiguous = true;
@@ -129,9 +132,9 @@ public class Reflector {
             "Illegal overloaded getter method with ambiguous type for property ''{0}'' in class ''{1}''. This breaks the JavaBeans specification and can cause unpredictable results.",
             name, method.getDeclaringClass().getName()))
         : new MethodInvoker(method);
-    getMethods.put(name, invoker);
-    Type returnType = TypeParameterResolver.resolveReturnType(method, type);
-    getTypes.put(name, typeToClass(returnType));
+    getMethods.put(name, invoker);  //将属性名和对应的方法放入getMethods中
+    Type returnType = TypeParameterResolver.resolveReturnType(method, type);  //方法的返回类型
+    getTypes.put(name, typeToClass(returnType));  //将属性名和方法返回类型放入getTypes中
   }
 
   private void addSetMethods(Method[] methods) {
@@ -148,6 +151,9 @@ public class Reflector {
     }
   }
 
+  /**
+   * 解决重写和重载父类的get方法时造成的冲突
+   */
   private void resolveSetterConflicts(Map<String, List<Method>> conflictingSetters) {
     for (Entry<String, List<Method>> entry : conflictingSetters.entrySet()) {
       String propName = entry.getKey();

@@ -59,6 +59,7 @@ public abstract class BaseExecutor implements Executor {
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
 
+  //嵌套查询
   protected int queryStack;
   private boolean closed;
 
@@ -149,6 +150,7 @@ public abstract class BaseExecutor implements Executor {
     List<E> list;
     try {
       queryStack++;
+      //查询一级缓存
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
@@ -191,6 +193,7 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  //创建一级缓存key
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
@@ -326,6 +329,7 @@ public abstract class BaseExecutor implements Executor {
     } finally {
       localCache.removeObject(key);
     }
+    //将查询结果放入一级缓存
     localCache.putObject(key, list);
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);

@@ -22,6 +22,7 @@ import org.apache.ibatis.cache.decorators.TransactionalCache;
 import org.apache.ibatis.util.MapUtil;
 
 /**
+ * 二级缓存暂存区管理类，在暂存区中key为二级缓存，value为暂存内容
  * @author Clinton Begin
  */
 public class TransactionalCacheManager {
@@ -33,10 +34,12 @@ public class TransactionalCacheManager {
   }
 
   public Object getObject(Cache cache, CacheKey key) {
+    //通过二级缓存查询是否有对应的数据
     return getTransactionalCache(cache).getObject(key);
   }
 
   public void putObject(Cache cache, CacheKey key, Object value) {
+    //将数据放入暂存区
     getTransactionalCache(cache).putObject(key, value);
   }
 
@@ -53,6 +56,7 @@ public class TransactionalCacheManager {
   }
 
   private TransactionalCache getTransactionalCache(Cache cache) {
+    //获取暂存区的内容，如果暂存区为空则返回一个为空值的暂存区对象
     return MapUtil.computeIfAbsent(transactionalCaches, cache, TransactionalCache::new);
   }
 

@@ -33,6 +33,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 二级缓存
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -93,14 +94,18 @@ public class CachingExecutor implements Executor {
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
     Cache cache = ms.getCache();
+    //如果开启二级缓存 执行二级缓存相关操作
     if (cache != null) {
       flushCacheIfRequired(ms);
       if (ms.isUseCache() && resultHandler == null) {
         ensureNoOutParams(ms, boundSql);
         @SuppressWarnings("unchecked")
+          //查询二级缓存
         List<E> list = (List<E>) tcm.getObject(cache, key);
         if (list == null) {
+          //如果二级缓存没有，则将执行操作交给下一个执行器
           list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+          //将查询结果放入暂存区
           tcm.putObject(cache, key, list); // issue #578 and #116
         }
         return list;
@@ -163,6 +168,7 @@ public class CachingExecutor implements Executor {
 
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
+    //清空二级缓存
     if (cache != null && ms.isFlushCacheRequired()) {
       tcm.clear(cache);
     }
